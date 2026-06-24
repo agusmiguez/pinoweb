@@ -236,16 +236,37 @@
   function openCart() { var c = $("[data-cart]"), o = $("[data-cart-overlay]"); if (o) { o.hidden = false; requestAnimationFrame(function () { o.classList.add("show"); }); } if (c) { c.classList.add("is-open"); c.setAttribute("aria-hidden", "false"); } document.body.style.overflow = "hidden"; }
   function closeCart() { var c = $("[data-cart]"), o = $("[data-cart-overlay]"); if (c) { c.classList.remove("is-open"); c.setAttribute("aria-hidden", "true"); } if (o) { o.classList.remove("show"); setTimeout(function () { o.hidden = true; }, 350); } document.body.style.overflow = ""; }
 
-  function checkout() {
+  function renderCheckout() {
+    var wrap = $("[data-checkout-items]");
+    if (wrap) wrap.innerHTML = cart.map(function (l) {
+      var p = PRODUCTS.find(function (x) { return x.id === l.id; }); if (!p) return "";
+      var sz = l.size !== "Único" ? " · Talle " + esc(l.size) : "";
+      return '<div class="co-item"><div><div class="co-name">' + esc(p.name) + "</div>" +
+        '<div class="co-sub">x' + l.qty + sz + "</div></div><div class=\"co-price\">" + fmt(p.price * l.qty) + "</div></div>";
+    }).join("");
+    var t = $("[data-checkout-total]"); if (t) t.textContent = fmt(cartTotal());
+  }
+  function openCheckout() {
+    if (!cart.length) return;
+    renderCheckout();
+    closeCart();
+    var pg = $("[data-checkout-page]"); if (pg) pg.hidden = false;
+    document.body.style.overflow = "hidden";
+    window.scrollTo(0, 0);
+  }
+  function closeCheckout() { var pg = $("[data-checkout-page]"); if (pg) pg.hidden = true; document.body.style.overflow = ""; }
+  function backToCart() { closeCheckout(); openCart(); }
+
+  function sendReceipt() {
     if (!cart.length) return;
     var lines = cart.map(function (l) {
       var p = PRODUCTS.find(function (x) { return x.id === l.id; });
       return "• " + p.name + (l.size !== "Único" ? " (Talle " + l.size + ")" : "") + " x" + l.qty + " — " + fmt(p.price * l.qty);
     });
-    var msg = "¡Hola Tienda Pino! Quiero hacer este pedido:\n\n" + lines.join("\n") +
-      "\n\n*Total: " + fmt(cartTotal()) + "*\n\n¿Coordinamos pago y entrega?";
+    var msg = "¡Hola Tienda Pino! Quiero confirmar este pedido:\n\n" + lines.join("\n") +
+      "\n\n*Total: " + fmt(cartTotal()) + "*\n\nAdjunto el comprobante de transferencia.";
     window.open("https://wa.me/" + (CFG.whatsapp || "") + "?text=" + encodeURIComponent(msg), "_blank", "noopener");
-    cart = []; renderCart(); closeCart();
+    cart = []; renderCart(); closeCheckout();
     toast("✓ Pedido enviado por WhatsApp", "ok");
   }
   function copyPay(which) {
@@ -511,7 +532,9 @@
       case "add": addToCart(id); break;
       case "cart-open": openCart(); break;
       case "cart-close": closeCart(); break;
-      case "checkout": checkout(); break;
+      case "checkout": openCheckout(); break;
+      case "checkout-back": backToCart(); break;
+      case "send-receipt": sendReceipt(); break;
       case "copy": copyPay(el.getAttribute("data-copy")); break;
       case "qty-inc": changeQty(key, 1); break;
       case "qty-dec": changeQty(key, -1); break;
@@ -542,7 +565,8 @@
     // mapear data-* sin data-act a acciones (botones del HTML fijo)
     var map = [
       ["[data-cart-open]", "cart-open"], ["[data-cart-close]", "cart-close"], ["[data-cart-overlay]", "cart-close"],
-      ["[data-checkout]", "checkout"], ["[data-admin-open]", "admin-open"], ["[data-admin-cancel]", "admin-cancel"],
+      ["[data-checkout]", "checkout"], ["[data-checkout-back]", "checkout-back"], ["[data-send-receipt]", "send-receipt"],
+      ["[data-admin-open]", "admin-open"], ["[data-admin-cancel]", "admin-cancel"],
       ["[data-admin-overlay]", "admin-cancel"], ["[data-admin-login-btn]", "admin-login"], ["[data-admin-close]", "admin-close"],
       ["[data-admin-logout]", "admin-logout"], ["[data-new-prod]", "new-prod"], ["[data-prod-close]", "prod-close"],
       ["[data-prod-cancel]", "prod-cancel"], ["[data-prod-overlay]", "prod-cancel"], ["[data-prod-save]", "prod-save"],
@@ -554,7 +578,7 @@
 
     document.addEventListener("click", onClick);
     document.addEventListener("keydown", function (e) {
-      if (e.key === "Escape") { closeCart(); closeAdminLogin(); closeProdModal(); closeConfirm(); }
+      if (e.key === "Escape") { closeCart(); closeCheckout(); closeAdminLogin(); closeProdModal(); closeConfirm(); }
     });
     var pw = $("[data-admin-pw]"); if (pw) pw.addEventListener("keydown", function (e) { if (e.key === "Enter") doLogin(); });
     var ti = $("[data-p-tag-input]"); if (ti) ti.addEventListener("keydown", function (e) { if (e.key === "Enter") { e.preventDefault(); addTag(ti.value); ti.value = ""; } });
@@ -568,7 +592,9 @@
   function boot() {
     try { initSplash(); } catch (e) { console.warn(e); }
     var alias = $("[data-alias]"); if (alias) alias.textContent = CFG.alias || "—";
-    var cbu = $("[data-cbu]"); if (cbu) cbu.textContent = CFG.cbu || "—";
+    $all("[data-cbu]").forEach(function (e) { e.textContent = CFG.cbu || "—"; });
+    $all("[data-alias]").forEach(function (e) { e.textContent = CFG.alias || "—"; });
+    var tit = $("[data-titular]"); if (tit) tit.textContent = CFG.titular || "—";
     renderTabs(); bindStatic(); initYear();
     loadCatalog();
   }

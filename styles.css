@@ -154,6 +154,26 @@ a{color:inherit;text-decoration:none}
 .copy-btn:hover{background:rgba(54,186,95,.24)}
 .cart-checkout{width:100%}
 
+/* Checkout / confirmación */
+.checkout-page{position:fixed;inset:0;z-index:215;background:var(--bg);overflow-y:auto}
+.checkout-wrap{max-width:560px;margin:0 auto;padding:2rem clamp(1.2rem,4vw,2rem) 3rem}
+.back-nav{background:none;border:0;color:var(--cream-2);font-size:.92rem;cursor:pointer;padding:.4rem 0;margin-bottom:1rem}
+.back-nav:hover{color:var(--cream)}
+.checkout-title{font-family:var(--font-display);font-weight:800;font-size:clamp(1.8rem,5vw,2.6rem);letter-spacing:-.02em;margin-bottom:1.4rem}
+.checkout-section{background:var(--bg-2);border:1px solid var(--line);border-radius:16px;padding:1.3rem;margin-bottom:1rem}
+.checkout-lbl{font-size:.74rem;letter-spacing:.12em;text-transform:uppercase;color:var(--green);margin-bottom:1rem;font-weight:600}
+.co-item{display:flex;justify-content:space-between;align-items:center;gap:1rem;padding:.5rem 0;border-bottom:1px solid var(--line-2)}
+.co-item:last-child{border-bottom:0}
+.co-name{font-family:var(--font-display);font-weight:600;font-size:.98rem}
+.co-sub{font-size:.8rem;color:var(--cream-3)}
+.co-price{font-weight:600}
+.checkout-total-row{display:flex;justify-content:space-between;align-items:baseline;margin-top:1rem;padding-top:1rem;border-top:1px solid var(--line)}
+.checkout-total-row span{color:var(--cream-2)}
+.checkout-total-row strong{font-family:var(--font-display);font-weight:700;font-size:1.7rem;letter-spacing:-.01em}
+.checkout-note{font-size:.86rem;color:var(--cream-3);text-align:center;margin:1.2rem 0;line-height:1.5}
+.checkout-send{width:100%;background:#25d366;color:#06251a}
+.checkout-send:hover{background:#25d366;filter:brightness(1.05)}
+
 /* Modals */
 .modal{position:fixed;z-index:310;top:50%;left:50%;transform:translate(-50%,-50%);width:min(560px,94vw);max-height:90vh;overflow-y:auto;background:var(--bg-2);border:1px solid var(--line);border-radius:18px;padding:1.6rem}
 .modal.admin-login,.modal.confirm-modal{width:min(400px,94vw)}
