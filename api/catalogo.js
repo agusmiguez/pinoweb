@@ -227,6 +227,7 @@ export default async function handler(req, res) {
         ok: true,
         source: "cache",
         cachedAt: cached.updated,
+        excelError: excelErr.message,
       });
       return;
     }
