@@ -212,9 +212,10 @@ async function fetchFromExcel() {
 
 export default async function handler(req, res) {
   res.setHeader("Access-Control-Allow-Origin", "*");
-  // s-maxage: fresco 60s en edge. SWR 600s: tras eso sirve la copia al instante
-  // y revalida en segundo plano → casi nadie espera la carga fría de Graph.
-  res.setHeader("Cache-Control", "s-maxage=60, stale-while-revalidate=600");
+  // s-maxage=1 + SWR: sirve la copia al instante y revalida en background.
+  // Stock/ediciones del Excel se reflejan al siguiente refresh; la latencia
+  // de Microsoft Graph queda en segundo plano (no la espera el usuario).
+  res.setHeader("Cache-Control", "s-maxage=1, stale-while-revalidate=600");
 
   try {
     // Intento leer del Excel
