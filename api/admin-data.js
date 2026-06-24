@@ -42,7 +42,9 @@ export default async function handler(req, res) {
         return;
       }
       const data = await r.json();
-      res.setHeader('Cache-Control', 'no-store');
+      // Cache en edge/CDN: los ~4MB de fotos salen del CDN, no del Blob en cada visita.
+      // Las ediciones del admin aparecen tras ~60s (stale-while-revalidate sirve al instante).
+      res.setHeader('Cache-Control', 'public, max-age=30, s-maxage=60, stale-while-revalidate=600');
       res.status(200).json({ ok: true, data });
       return;
     }

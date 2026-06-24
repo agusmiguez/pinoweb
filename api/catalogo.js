@@ -140,8 +140,13 @@ async function fetchFromExcel() {
     ? `https://graph.microsoft.com/v1.0/${fileId}/workbook/worksheets`
     : `https://graph.microsoft.com/v1.0/me/drive/items/${fileId}/workbook/worksheets`;
 
+  // Lecturas de hojas en paralelo (STOCK + CAPITAL) → 1 round trip en vez de 2
+  const [stockRows, capitalRows] = await Promise.all([
+    readSheet(base, "STOCK", hdrs),
+    readSheet(base, "CAPITAL", hdrs),
+  ]);
+
   // STOCK
-  const stockRows = await readSheet(base, "STOCK", hdrs);
   const stock = [];
   const stockNamesOrdered = [];
   const seenNames = new Set();
@@ -168,8 +173,7 @@ async function fetchFromExcel() {
     });
   }
 
-  // CAPITAL
-  const capitalRows = await readSheet(base, "CAPITAL", hdrs);
+  // CAPITAL (leído arriba en paralelo)
   const costMap = {};
   if (capitalRows) {
     let hIdx = -1, col = 0;

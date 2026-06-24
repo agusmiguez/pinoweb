@@ -49,7 +49,7 @@
 
   /* ── API ────────────────────────────────────────────────────────────── */
   function fetchAdminData() {
-    return fetch("/api/admin-data", { cache: "no-store" })
+    return fetch("/api/admin-data")
       .then(function (r) { return r.ok ? r.json() : null; })
       .then(function (j) { if (j && j.ok && j.data) adminEdits = j.data; })
       .catch(function (e) { console.warn("admin-data:", e.message); });
@@ -65,10 +65,11 @@
   function loadCatalog() {
     var grid = $("[data-grid]");
     if (grid) grid.innerHTML = '<div class="loading"><div class="sp"></div><div>Cargando catálogo…</div></div>';
-    return fetchAdminData()
-      .then(function () { return fetch("/api/catalogo"); })
-      .then(function (r) { if (!r.ok) throw new Error("Error " + r.status); return r.json(); })
-      .then(function (data) {
+    // admin-data y catalogo en paralelo (antes era en serie → se sumaban)
+    var catP = fetch("/api/catalogo").then(function (r) { if (!r.ok) throw new Error("Error " + r.status); return r.json(); });
+    return Promise.all([fetchAdminData(), catP])
+      .then(function (arr) {
+        var data = arr[1];
         if (!data.ok) throw new Error(data.error || "Error desconocido");
         STOCK = data.stock || [];
         PRODUCTS = (data.products || []).map(function (p, i) {
