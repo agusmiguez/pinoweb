@@ -8,110 +8,185 @@
 <meta name="theme-color" content="#0a1530" />
 <meta property="og:title" content="Catálogo · Tienda Pino · N.E.C.C." />
 <meta property="og:description" content="Indumentaria y accesorios oficiales del club. Vestí tu pertenencia." />
-<meta property="og:type" content="website" />
 <meta property="og:image" content="assets/img/hero-lifestyle.webp" />
 
 <link rel="icon" type="image/svg+xml" href="assets/img/logo.svg" />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,700;12..96,800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
-
-<link rel="stylesheet" href="styles.css?v=20260623b" />
+<link rel="stylesheet" href="styles.css?v=20260623c" />
 </head>
 <body>
 
-<!-- ── Splash ──────────────────────────────────────────────────────────── -->
-<div class="splash" data-splash>
-  <div class="splash-mark"><img src="assets/img/logo.svg" alt="" width="88" height="88" /></div>
-</div>
+<!-- Splash -->
+<div class="splash" data-splash><div class="splash-mark"><img src="assets/img/logo.svg" alt="" width="88" height="88" /></div></div>
 
-<!-- ── Header ──────────────────────────────────────────────────────────── -->
+<!-- Topbar -->
 <header class="topbar" data-nav>
   <a class="brand" href="#top" aria-label="Tienda Pino — inicio">
     <img src="assets/img/logo.svg" alt="" width="36" height="36" />
-    <span class="brand-text">
-      <strong>Tienda&nbsp;Pino</strong>
-      <small>Oficial · N.E.C.C.</small>
-    </span>
+    <span class="brand-text"><strong>Tienda&nbsp;Pino</strong><small>Oficial · N.E.C.C.</small></span>
   </a>
-
-  <nav class="tabs" data-tabs aria-label="Categorías">
-    <!-- pestañas inyectadas por JS; fallback estático abajo -->
-    <button class="tab is-active" data-cat="todo">Todo</button>
-    <button class="tab" data-cat="prendas">Prendas</button>
-    <button class="tab" data-cat="gorras">Gorras</button>
-    <button class="tab" data-cat="mates">Mates y bombillas</button>
-    <button class="tab" data-cat="accesorios">Accesorios</button>
-  </nav>
-
-  <button class="cart-btn" data-cart-open aria-label="Abrir pedido">
-    <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-      <circle cx="9" cy="20" r="1.4"/><circle cx="18" cy="20" r="1.4"/>
-      <path d="M2.5 3h2.2l2.2 12.3a1.6 1.6 0 0 0 1.6 1.3h8.5a1.6 1.6 0 0 0 1.6-1.3L21.5 7H6"/>
-    </svg>
-    <span class="cart-count" data-cart-count>0</span>
-  </button>
+  <nav class="tabs" data-tabs aria-label="Categorías"></nav>
+  <div class="topbar-actions">
+    <button class="icon-btn" data-admin-open aria-label="Panel admin" title="Panel admin">
+      <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.6 1.6 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.6 1.6 0 0 0-2.7 1.1V21a2 2 0 1 1-4 0v-.1A1.6 1.6 0 0 0 7 19.4a1.6 1.6 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.6 1.6 0 0 0-1.1-2.7H1a2 2 0 1 1 0-4h.1A1.6 1.6 0 0 0 2.6 7a1.6 1.6 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.6 1.6 0 0 0 1.8.3H7a1.6 1.6 0 0 0 1-1.5V1a2 2 0 1 1 4 0v.1a1.6 1.6 0 0 0 2.7 1.1l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.6 1.6 0 0 0-.3 1.8V7a1.6 1.6 0 0 0 1.5 1H23a2 2 0 1 1 0 4h-.1a1.6 1.6 0 0 0-1.5 1Z"/></svg>
+    </button>
+    <button class="cart-btn" data-cart-open aria-label="Abrir pedido">
+      <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="20" r="1.4"/><circle cx="18" cy="20" r="1.4"/><path d="M2.5 3h2.2l2.2 12.3a1.6 1.6 0 0 0 1.6 1.3h8.5a1.6 1.6 0 0 0 1.6-1.3L21.5 7H6"/></svg>
+      <span class="cart-count" data-cart-count>0</span>
+    </button>
+  </div>
 </header>
-
-<!-- pestañas en barra propia para mobile (scroll horizontal) -->
 <div class="tabs-mobile" data-tabs-mobile aria-hidden="true"></div>
 
 <main id="top">
-
-  <!-- ── Encabezado de catálogo ──────────────────────────────────────── -->
   <section class="catalog-head">
     <p class="kicker">Catálogo oficial</p>
     <h1>Vestí los colores del club.</h1>
     <p class="catalog-sub">Indumentaria, gorras, mates y accesorios del Náutico Escobar. Armá tu pedido y lo coordinamos por WhatsApp.</p>
   </section>
-
-  <!-- ── Grilla de productos ─────────────────────────────────────────── -->
   <section class="catalog">
-    <div class="product-grid" data-grid><!-- inyectado por JS --></div>
-    <p class="empty-cat" data-empty hidden>No hay productos en esta categoría todavía.</p>
+    <div class="product-grid" data-grid></div>
   </section>
-
 </main>
 
-<!-- ── Footer ──────────────────────────────────────────────────────────── -->
 <footer class="footer">
   <div class="footer-brand">
     <img src="assets/img/logo.svg" alt="" width="40" height="40" />
-    <div>
-      <strong>Tienda Pino</strong>
-      <span>Indumentaria oficial · Náutico Escobar Country Club</span>
-    </div>
+    <div><strong>Tienda Pino</strong><span>Indumentaria oficial · Náutico Escobar Country Club</span></div>
   </div>
   <p class="footer-note">© <span data-year>2026</span> Tienda Pino · N.E.C.C. — Hecho por y para la comunidad del club.</p>
 </footer>
 
-<!-- ── Carrito / Pedido (drawer) ───────────────────────────────────────── -->
-<div class="cart-overlay" data-cart-overlay hidden></div>
+<!-- Cart drawer -->
+<div class="overlay" data-cart-overlay hidden></div>
 <aside class="cart" data-cart aria-label="Tu pedido" aria-hidden="true">
-  <header class="cart-top">
-    <h2>Tu pedido</h2>
-    <button class="cart-close" data-cart-close aria-label="Cerrar">&times;</button>
-  </header>
-
-  <div class="cart-items" data-cart-items><!-- inyectado por JS --></div>
-
-  <p class="cart-empty" data-cart-empty>
-    Tu pedido está vacío.<br><span>Agregá productos del catálogo.</span>
-  </p>
-
+  <header class="cart-top"><h2>Tu pedido</h2><button class="x-btn" data-cart-close aria-label="Cerrar">&times;</button></header>
+  <div class="cart-items" data-cart-items></div>
+  <p class="cart-empty" data-cart-empty>Tu pedido está vacío.<br><span>Agregá productos del catálogo.</span></p>
   <div class="cart-foot" data-cart-foot hidden>
     <div class="cart-total"><span>Total</span><strong data-cart-total>$0</strong></div>
     <div class="cart-pay">
-      <p>Transferí a <strong data-alias>—</strong> · CBU <span data-cbu>—</span> y enviá el comprobante por WhatsApp.</p>
+      <p>Transferí y enviá el comprobante por WhatsApp:</p>
+      <div class="pay-row"><span>Alias</span><code data-alias>—</code><button class="copy-btn" data-copy="alias">Copiar</button></div>
+      <div class="pay-row"><span>CBU</span><code data-cbu>—</code><button class="copy-btn" data-copy="cbu">Copiar</button></div>
     </div>
     <button class="btn btn-primary cart-checkout" data-checkout>Finalizar pedido por WhatsApp</button>
   </div>
 </aside>
 
-<!-- ── Scripts (classic defer + IIFE) ──────────────────────────────────── -->
-<script defer src="lib/gsap.min.js?v=20260623b"></script>
-<script defer src="lib/ScrollTrigger.min.js?v=20260623b"></script>
-<script defer src="lib/manifest.js?v=20260623b"></script>
-<script defer src="main.js?v=20260623b"></script>
+<!-- Admin login -->
+<div class="overlay" data-admin-overlay hidden></div>
+<div class="modal admin-login" data-admin-login hidden role="dialog" aria-label="Acceso admin">
+  <h3>Panel de administración</h3>
+  <p class="muted">Ingresá la contraseña para gestionar productos.</p>
+  <input type="password" data-admin-pw placeholder="Contraseña" autocomplete="current-password" />
+  <p class="err" data-admin-err hidden>Contraseña incorrecta.</p>
+  <div class="modal-actions">
+    <button class="btn btn-ghost" data-admin-cancel>Cancelar</button>
+    <button class="btn btn-primary" data-admin-login-btn>Entrar</button>
+  </div>
+</div>
+
+<!-- Admin panel -->
+<section class="admin-panel" data-admin-panel hidden>
+  <header class="admin-bar">
+    <div class="admin-bar-l"><img src="assets/img/logo.svg" alt="" width="30" height="30" /><strong>Panel Admin</strong></div>
+    <nav class="admin-tabs">
+      <button class="adm-tab is-active" data-adm-tab="dash">Resumen</button>
+      <button class="adm-tab" data-adm-tab="prods">Productos</button>
+      <button class="adm-tab" data-adm-tab="stock">Stock (Excel)</button>
+    </nav>
+    <div class="admin-bar-r">
+      <button class="btn btn-ghost sm" data-admin-logout>Salir</button>
+      <button class="x-btn" data-admin-close aria-label="Cerrar panel">&times;</button>
+    </div>
+  </header>
+
+  <div class="admin-view" data-adm-view="dash">
+    <div class="dash-cards" data-dash-cards></div>
+    <div class="dash-alerts" data-dash-alerts></div>
+  </div>
+
+  <div class="admin-view" data-adm-view="prods" hidden>
+    <div class="admin-toolbar">
+      <p class="muted" data-prods-note></p>
+      <button class="btn btn-primary sm" data-new-prod>+ Nuevo producto</button>
+    </div>
+    <div class="admin-table-wrap"><table class="admin-table" data-prods-table></table></div>
+  </div>
+
+  <div class="admin-view" data-adm-view="stock" hidden>
+    <input class="admin-search" data-stock-search placeholder="Buscar producto o talle…" />
+    <div class="admin-table-wrap"><table class="admin-table" data-stock-table></table></div>
+  </div>
+</section>
+
+<!-- Product editor modal -->
+<div class="overlay" data-prod-overlay hidden></div>
+<div class="modal prod-modal" data-prod-modal hidden role="dialog" aria-label="Editar producto">
+  <header class="modal-head"><h3 data-prod-title>Editar producto</h3><button class="x-btn" data-prod-close aria-label="Cerrar">&times;</button></header>
+  <div class="modal-body">
+    <label>Producto del Excel (vincula stock y talles)
+      <select data-p-excelkey></select>
+    </label>
+    <label>Nombre visible <input data-p-name placeholder="Camiseta Titular" /></label>
+    <div class="grid2">
+      <label>Categoría
+        <select data-p-cat>
+          <option value="prendas">Prendas</option>
+          <option value="gorras">Gorras</option>
+          <option value="mates">Mates y bombillas</option>
+          <option value="accesorios">Accesorios</option>
+        </select>
+      </label>
+      <label>Badge
+        <select data-p-badge>
+          <option value="">— Sin badge —</option>
+          <option value="Nuevo">Nuevo</option>
+          <option value="Más vendido">Más vendido</option>
+          <option value="Limitado">Limitado</option>
+          <option value="Últimos">Últimos</option>
+          <option value="Hot">Hot</option>
+        </select>
+      </label>
+    </div>
+    <div class="grid2">
+      <label>Precio de venta <input type="number" data-p-price placeholder="28900" /></label>
+      <label>Costo (opcional) <input type="number" data-p-cost placeholder="0" /></label>
+    </div>
+    <label>Descripción <textarea data-p-desc rows="2" placeholder="Texto corto del producto…"></textarea></label>
+    <div class="field">
+      <span class="field-lbl">Talles</span>
+      <div class="tags" data-p-tags></div>
+      <div class="tag-add"><input data-p-tag-input placeholder="Agregar talle (Enter)" /><button class="btn btn-ghost sm" data-tag-add>+</button></div>
+    </div>
+    <div class="field">
+      <span class="field-lbl">Fotos</span>
+      <div class="img-gallery" data-p-gallery></div>
+      <label class="upload-btn">Subir fotos<input type="file" data-p-imgs accept="image/*" multiple hidden /></label>
+    </div>
+  </div>
+  <div class="modal-actions">
+    <button class="btn btn-ghost" data-prod-cancel>Cancelar</button>
+    <button class="btn btn-primary" data-prod-save>Guardar producto</button>
+  </div>
+</div>
+
+<!-- Confirm modal -->
+<div class="overlay" data-confirm-overlay hidden></div>
+<div class="modal confirm-modal" data-confirm hidden role="dialog" aria-label="Confirmar">
+  <p data-confirm-msg></p>
+  <div class="modal-actions">
+    <button class="btn btn-ghost" data-confirm-cancel>Cancelar</button>
+    <button class="btn btn-danger" data-confirm-ok>Eliminar</button>
+  </div>
+</div>
+
+<div class="toast-wrap" data-toasts></div>
+
+<script defer src="lib/manifest.js?v=20260623c"></script>
+<script defer src="main.js?v=20260623c"></script>
 </body>
 </html>
