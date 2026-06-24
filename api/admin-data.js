@@ -7,6 +7,18 @@ import { put, list } from '@vercel/blob';
 const BLOB_FILENAME = 'tiendapino-admin-data.json';
 const ADMIN_PASS = process.env.ADMIN_PASS || 'pino2026';
 
+// Resuelve el token de Blob bajo CUALQUIER nombre de env terminado en
+// READ_WRITE_TOKEN (Vercel a veces lo nombra <store>_READ_WRITE_TOKEN).
+function blobToken() {
+  if (process.env.BLOB_READ_WRITE_TOKEN) return process.env.BLOB_READ_WRITE_TOKEN;
+  for (const k of Object.keys(process.env)) {
+    const v = process.env[k];
+    if (/READ_WRITE_TOKEN$/.test(k) && typeof v === 'string' && v.startsWith('vercel_blob_rw_')) return v;
+  }
+  return undefined;
+}
+const RW = blobToken();
+
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
@@ -16,7 +28,7 @@ export default async function handler(req, res) {
 
   try {
     if (req.method === 'GET') {
-      const { blobs } = await list({ prefix: BLOB_FILENAME });
+      const { blobs } = await list({ prefix: BLOB_FILENAME, token: RW });
       const blob = blobs.find(b => b.pathname === BLOB_FILENAME);
       if (!blob) {
         res.setHeader('Cache-Control', 'no-store');
@@ -51,6 +63,7 @@ export default async function handler(req, res) {
         contentType: 'application/json',
         allowOverwrite: true,
         addRandomSuffix: false,
+        token: RW,
       });
       res.status(200).json({ ok: true });
       return;

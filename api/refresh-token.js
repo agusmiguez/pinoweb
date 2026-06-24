@@ -8,10 +8,20 @@ const CLIENT_ID = process.env.MS_CLIENT_ID;
 const INITIAL_REFRESH_TOKEN = process.env.MS_REFRESH_TOKEN;
 const TOKEN_BLOB = 'tiendapino-ms-token.json';
 
+function blobToken() {
+  if (process.env.BLOB_READ_WRITE_TOKEN) return process.env.BLOB_READ_WRITE_TOKEN;
+  for (const k of Object.keys(process.env)) {
+    const v = process.env[k];
+    if (/READ_WRITE_TOKEN$/.test(k) && typeof v === 'string' && v.startsWith('vercel_blob_rw_')) return v;
+  }
+  return undefined;
+}
+const RW = blobToken();
+
 async function getCurrentRefreshToken() {
   // Buscar el token guardado en Blob (es el más reciente)
   try {
-    const { blobs } = await list({ prefix: TOKEN_BLOB });
+    const { blobs } = await list({ prefix: TOKEN_BLOB, token: RW });
     const blob = blobs.find(b => b.pathname === TOKEN_BLOB);
     if (blob) {
       const r = await fetch(blob.downloadUrl || blob.url);
@@ -30,6 +40,7 @@ async function saveRefreshToken(token) {
     contentType: 'application/json',
     allowOverwrite: true,
     addRandomSuffix: false,
+    token: RW,
   });
 }
 

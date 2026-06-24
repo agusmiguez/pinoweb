@@ -10,6 +10,17 @@ const FILENAME = "tiendapino_excel.xlsx";
 const TOKEN_BLOB = 'tiendapino-ms-token.json';
 const CACHE_BLOB = 'tiendapino-catalog-cache.json';
 
+// Resuelve el token de Blob bajo cualquier nombre terminado en READ_WRITE_TOKEN
+function blobToken() {
+  if (process.env.BLOB_READ_WRITE_TOKEN) return process.env.BLOB_READ_WRITE_TOKEN;
+  for (const k of Object.keys(process.env)) {
+    const v = process.env[k];
+    if (/READ_WRITE_TOKEN$/.test(k) && typeof v === 'string' && v.startsWith('vercel_blob_rw_')) return v;
+  }
+  return undefined;
+}
+const RW = blobToken();
+
 // Precios de venta hardcodeados
 const PRECIOS_VENTA = {
   "musculosa a": 25000,
@@ -22,7 +33,7 @@ const PRECIOS_VENTA = {
 // ── Token management ──
 async function getCurrentRefreshToken() {
   try {
-    const { blobs } = await list({ prefix: TOKEN_BLOB });
+    const { blobs } = await list({ prefix: TOKEN_BLOB, token: RW });
     const blob = blobs.find(b => b.pathname === TOKEN_BLOB);
     if (blob) {
       const r = await fetch(blob.downloadUrl || blob.url);
@@ -41,6 +52,7 @@ async function saveRefreshToken(token) {
     contentType: 'application/json',
     allowOverwrite: true,
     addRandomSuffix: false,
+    token: RW,
   });
 }
 
@@ -100,13 +112,14 @@ async function saveCatalogCache(data) {
       contentType: 'application/json',
       allowOverwrite: true,
       addRandomSuffix: false,
+      token: RW,
     });
   } catch(e) { console.warn("No se pudo guardar cache:", e.message); }
 }
 
 async function loadCatalogCache() {
   try {
-    const { blobs } = await list({ prefix: CACHE_BLOB });
+    const { blobs } = await list({ prefix: CACHE_BLOB, token: RW });
     const blob = blobs.find(b => b.pathname === CACHE_BLOB);
     if (!blob) return null;
     const r = await fetch(blob.downloadUrl || blob.url);

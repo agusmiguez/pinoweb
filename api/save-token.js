@@ -6,6 +6,16 @@ import { put } from '@vercel/blob';
 
 const TOKEN_BLOB = 'tiendapino-ms-token.json';
 
+function blobToken() {
+  if (process.env.BLOB_READ_WRITE_TOKEN) return process.env.BLOB_READ_WRITE_TOKEN;
+  for (const k of Object.keys(process.env)) {
+    const v = process.env[k];
+    if (/READ_WRITE_TOKEN$/.test(k) && typeof v === 'string' && v.startsWith('vercel_blob_rw_')) return v;
+  }
+  return undefined;
+}
+const RW = blobToken();
+
 export default async function handler(req, res) {
   res.setHeader("Access-Control-Allow-Origin", "*");
 
@@ -32,6 +42,7 @@ export default async function handler(req, res) {
         contentType: 'application/json',
         allowOverwrite: true,
         addRandomSuffix: false,
+        token: RW,
       }
     );
 
