@@ -287,9 +287,13 @@
     cart = []; renderCart(); closeCheckout();
     toast("✓ Pedido enviado por WhatsApp", "ok");
   }
-  function copyPay(which) {
+  function copyPay(which, btn) {
     var val = which === "cbu" ? CFG.cbu : CFG.alias;
-    if (navigator.clipboard) navigator.clipboard.writeText(val).then(function () { toast("✓ Copiado", "ok"); }).catch(function () { toast("No se pudo copiar", "err"); });
+    var done = function () {
+      if (btn) { var t = btn.textContent; btn.textContent = "Copiado ✓"; btn.classList.add("copied"); setTimeout(function () { btn.textContent = t; btn.classList.remove("copied"); }, 1400); }
+      else toast("✓ Copiado", "ok");
+    };
+    if (navigator.clipboard) navigator.clipboard.writeText(val).then(done).catch(function () { toast("No se pudo copiar", "err"); });
   }
 
   /* ── Admin: login / panel ───────────────────────────────────────────── */
@@ -553,7 +557,7 @@
       case "checkout": openCheckout(); break;
       case "checkout-back": backToCart(); break;
       case "send-receipt": sendReceipt(); break;
-      case "copy": copyPay(el.getAttribute("data-copy")); break;
+      case "copy": copyPay(el.getAttribute("data-copy"), el); break;
       case "qty-inc": changeQty(key, 1); break;
       case "qty-dec": changeQty(key, -1); break;
       case "cart-rm": removeLine(key); break;
