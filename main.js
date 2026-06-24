@@ -122,10 +122,24 @@
   /* ── Catálogo ───────────────────────────────────────────────────────── */
   function renderGrid() {
     var grid = $("[data-grid]"); if (!grid) return;
-    var list = PRODUCTS.filter(function (p) { return !p.hidden && (activeCat === "todo" || p.cat === activeCat); });
-    if (!list.length) { grid.innerHTML = '<div class="empty"><div class="ei">📦</div>No hay productos en esta categoría todavía.</div>'; return; }
+    var visible = PRODUCTS.filter(function (p) { return !p.hidden && (activeCat === "todo" || p.cat === activeCat); });
+    if (!visible.length) { grid.innerHTML = '<div class="empty"><div class="ei">📦</div>No hay productos en esta categoría todavía.</div>'; return; }
 
-    grid.innerHTML = list.map(function (p) {
+    // Categorías a mostrar como secciones (en "todo" todas; si hay tab, solo esa)
+    var cats = CATS.filter(function (c) { return c.id !== "todo"; })
+      .filter(function (c) { return activeCat === "todo" || c.id === activeCat; });
+
+    grid.innerHTML = cats.map(function (c) {
+      var items = visible.filter(function (p) { return p.cat === c.id; });
+      if (!items.length) return "";
+      var head = activeCat === "todo" ? '<h2 class="cat-title">' + esc(c.label) + "</h2>" : "";
+      return '<section class="cat-block">' + head +
+        '<div class="product-grid">' + items.map(cardHTML).join("") + "</div></section>";
+    }).join("");
+    revealCards();
+  }
+
+  function cardHTML(p) {
       var catLabel = (CATS.filter(function (c) { return c.id === p.cat; })[0] || {}).label || "";
       var total = getTotalDisp(p.excelKey);
       var hs = hasStock(p.excelKey);
@@ -164,8 +178,6 @@
           "</div>" +
         "</div>" +
       "</article>";
-    }).join("");
-    revealCards();
   }
   function revealCards() {
     var cards = $all(".card");
@@ -241,8 +253,13 @@
     if (wrap) wrap.innerHTML = cart.map(function (l) {
       var p = PRODUCTS.find(function (x) { return x.id === l.id; }); if (!p) return "";
       var sz = l.size !== "Único" ? " · Talle " + esc(l.size) : "";
-      return '<div class="co-item"><div><div class="co-name">' + esc(p.name) + "</div>" +
-        '<div class="co-sub">x' + l.qty + sz + "</div></div><div class=\"co-price\">" + fmt(p.price * l.qty) + "</div></div>";
+      var img = firstImg(p.img);
+      var thumb = img ? '<img class="co-thumb" src="' + esc(img) + '" alt="" />'
+                      : '<div class="co-thumb co-logo"><img src="assets/img/logo.svg" alt="" /></div>';
+      return '<div class="co-item">' + thumb +
+        '<div class="co-info"><div class="co-name">' + esc(p.name) + "</div>" +
+        '<div class="co-sub">x' + l.qty + sz + "</div></div>" +
+        '<div class="co-price">' + fmt(p.price * l.qty) + "</div></div>";
     }).join("");
     var t = $("[data-checkout-total]"); if (t) t.textContent = fmt(cartTotal());
   }
