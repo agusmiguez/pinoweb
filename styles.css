@@ -66,8 +66,20 @@ a{color:inherit;text-decoration:none}
 .tabs-mobile{display:none}
 
 /* Catalog head */
-.catalog-head{max-width:var(--maxw);margin:0 auto;padding:clamp(2.5rem,6vw,4.5rem) clamp(1.2rem,4vw,2.4rem) clamp(1.5rem,3vw,2.2rem);text-align:center}
-.catalog-head h1{font-family:var(--font-display);font-weight:800;font-size:clamp(2.1rem,6vw,4rem);line-height:1;letter-spacing:-.03em;text-wrap:balance;max-width:18ch;margin-inline:auto}
+.catalog-head{position:relative;isolation:isolate;max-width:var(--maxw);margin:0 auto;padding:clamp(2.5rem,6vw,4.5rem) clamp(1.2rem,4vw,2.4rem) clamp(1.5rem,3vw,2.2rem);text-align:center}
+/* Aurora sutil detrás del encabezado */
+.catalog-head::before{content:"";position:absolute;inset:-50% -10% -10%;z-index:-1;pointer-events:none;
+  background:radial-gradient(34% 48% at 24% 32%,rgba(54,186,95,.22),transparent 70%),
+             radial-gradient(30% 44% at 78% 26%,rgba(239,50,71,.15),transparent 70%),
+             radial-gradient(42% 52% at 56% 82%,rgba(22,48,106,.55),transparent 75%);
+  filter:blur(64px);animation:auroraDrift 24s ease-in-out infinite}
+@keyframes auroraDrift{0%,100%{transform:translate(0,0) scale(1)}50%{transform:translate(2%,-3%) scale(1.12)}}
+/* Título con degradado animado (sheen verde→naranja) */
+.catalog-head h1{font-family:var(--font-display);font-weight:800;font-size:clamp(2.1rem,6vw,4rem);line-height:1;letter-spacing:-.03em;text-wrap:balance;max-width:18ch;margin-inline:auto;
+  background:linear-gradient(100deg,#eef2f9 0%,#eef2f9 32%,var(--green) 46%,var(--orange) 56%,#eef2f9 70%,#eef2f9 100%);
+  background-size:250% 100%;-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;color:transparent;
+  animation:titleShine 9s linear infinite}
+@keyframes titleShine{0%{background-position:120% 0}100%{background-position:-120% 0}}
 .catalog-sub{margin:1rem auto 0;max-width:52ch;color:var(--cream-2);font-size:clamp(1rem,1.4vw,1.12rem)}
 
 /* Grid */
@@ -87,6 +99,10 @@ a{color:inherit;text-decoration:none}
 .card-media{position:relative;aspect-ratio:4/5;overflow:hidden;background:var(--bg-2)}
 .card-media img{width:100%;height:100%;object-fit:cover;transition:transform .7s var(--ease-out)}
 .card:hover .card-media img{transform:scale(1.05)}
+/* Spotlight: brillo que sigue el cursor sobre la imagen */
+.card-media::after{content:"";position:absolute;inset:0;pointer-events:none;opacity:0;transition:opacity .35s var(--ease);mix-blend-mode:overlay;
+  background:radial-gradient(150px circle at var(--mx,50%) var(--my,50%),rgba(255,255,255,.35),transparent 55%)}
+@media (hover:hover){.card:hover .card-media::after{opacity:1}}
 .card-logo{width:100%;height:100%;display:grid;place-items:center;background:radial-gradient(circle at 50% 40%,var(--bg-3),var(--bg-2))}
 .card-logo img{width:42%;height:auto;opacity:.5;filter:grayscale(.1)}
 .badge{position:absolute;top:1rem;left:1rem;z-index:2;font-size:.7rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;padding:.32rem .7rem;border-radius:100px}
@@ -274,4 +290,8 @@ a{color:inherit;text-decoration:none}
   .size{min-width:30px;padding:.25rem .45rem;font-size:.76rem}
   .cat-title{font-size:1.4rem}
 }
-@media (prefers-reduced-motion:reduce){.splash-mark{animation:none}}
+@media (prefers-reduced-motion:reduce){
+  .splash-mark{animation:none}
+  .catalog-head::before{animation:none}
+  .catalog-head h1{animation:none;background-position:0 0}
+}

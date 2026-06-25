@@ -599,6 +599,18 @@
     $all("[data-copy]").forEach(function (b) { b.setAttribute("data-act", "copy"); });
 
     document.addEventListener("click", onClick);
+    // Spotlight: el brillo de la card sigue el cursor (solo en dispositivos con hover)
+    if (!matchMedia("(hover: none)").matches) {
+      document.addEventListener("mousemove", function (e) {
+        var t = e.target;
+        var card = t && t.closest ? t.closest(".card") : null;
+        if (!card) return;
+        var m = card.querySelector(".card-media"); if (!m) return;
+        var r = m.getBoundingClientRect();
+        card.style.setProperty("--mx", (((e.clientX - r.left) / r.width) * 100).toFixed(1) + "%");
+        card.style.setProperty("--my", (((e.clientY - r.top) / r.height) * 100).toFixed(1) + "%");
+      }, { passive: true });
+    }
     document.addEventListener("keydown", function (e) {
       if (e.key === "Escape") { closeCart(); closeCheckout(); closeAdminLogin(); closeProdModal(); closeConfirm(); }
     });
