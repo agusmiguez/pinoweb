@@ -54,12 +54,34 @@
       .then(function (j) { if (j && j.ok && j.data) adminEdits = j.data; })
       .catch(function (e) { console.warn("admin-data:", e.message); });
   }
+  // Sube al Blob cualquier imagen base64 que quede en adminEdits y la reemplaza por su URL.
+  // Evita que el JSON de admin-data se infle con fotos (rompía el límite de tamaño).
+  function migrateBase64Images() {
+    var jobs = [];
+    Object.keys(adminEdits).forEach(function (key) {
+      var e = adminEdits[key];
+      if (!e || !e.img) return;
+      if (Array.isArray(e.img)) {
+        e.img.forEach(function (im, idx) {
+          if (typeof im === "string" && im.indexOf("data:image/") === 0) {
+            jobs.push(uploadImage(im).then(function (url) { e.img[idx] = url; }));
+          }
+        });
+      } else if (typeof e.img === "string" && e.img.indexOf("data:image/") === 0) {
+        jobs.push(uploadImage(e.img).then(function (url) { e.img = url; }));
+      }
+    });
+    return Promise.all(jobs);
+  }
+
   function pushAdminData() {
-    return fetch("/api/admin-data", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ pass: adminPass, data: adminEdits })
-    }).then(function (r) { return r.json().then(function (j) { return { status: r.status, j: j }; }); });
+    return migrateBase64Images().then(function () {
+      return fetch("/api/admin-data", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ pass: adminPass, data: adminEdits })
+      }).then(function (r) { return r.json().then(function (j) { return { status: r.status, j: j }; }); });
+    });
   }
 
   function loadCatalog() {
@@ -310,7 +332,13 @@
     if (!val) return;
     adminPass = val;
     var btn = $("[data-admin-login-btn]"); if (btn) { btn.disabled = true; btn.textContent = "Entrando…"; }
-    pushAdminData().then(function (res) {
+    // Verificación liviana: manda solo la pass con data vacía (no migra imágenes ni manda fotos)
+    fetch("/api/admin-data", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ pass: adminPass, verifyOnly: true })
+    }).then(function (r) { return r.json().then(function (j) { return { status: r.status, j: j }; }); })
+    .then(function (res) {
       if (btn) { btn.disabled = false; btn.textContent = "Entrar"; }
       if (res.status === 401) { adminPass = ""; var err = $("[data-admin-err]"); if (err) err.hidden = false; return; }
       adminLoggedIn = true;
