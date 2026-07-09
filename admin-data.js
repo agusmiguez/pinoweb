@@ -19,6 +19,9 @@ function blobToken() {
 }
 const RW = blobToken();
 
+// Permitir bodies grandes (por si todavía arrastra imágenes base64 viejas durante la migración)
+export const config = { api: { bodyParser: { sizeLimit: '10mb' } } };
+
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
@@ -59,6 +62,11 @@ export default async function handler(req, res) {
         : decodeURIComponent(req.headers['x-admin-pass'] || '');
       if (pass !== ADMIN_PASS) {
         res.status(401).json({ ok: false, error: 'Contraseña incorrecta' });
+        return;
+      }
+      // Solo verificar la contraseña (login), sin guardar nada
+      if (parsed.verifyOnly === true) {
+        res.status(200).json({ ok: true, verified: true });
         return;
       }
       // El contenido a guardar: body.data (nuevo) o el body entero sin pass (viejo)
