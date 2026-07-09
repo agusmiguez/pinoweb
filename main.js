@@ -57,7 +57,7 @@
   function pushAdminData() {
     return fetch("/api/admin-data", {
       method: "POST",
-      headers: { "Content-Type": "application/json", "X-Admin-Pass": adminPass },
+      headers: { "Content-Type": "application/json", "X-Admin-Pass": encodeURIComponent(adminPass) },
       body: JSON.stringify(adminEdits)
     }).then(function (r) { return r.json().then(function (j) { return { status: r.status, j: j }; }); });
   }
