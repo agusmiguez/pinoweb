@@ -430,44 +430,48 @@
     if (!cur || cur === "prendas") $("[data-p-cat]").value = guessCat(key);
   }
   function saveProd() {
-    var step = "inicio";
-    try {
-    step = "leer campos";
     var name = $("[data-p-name]").value.trim();
     var priceRaw = $("[data-p-price]").value.trim();
     var price = parseFloat(priceRaw);
     if (!name) { toast("El nombre es obligatorio", "err"); return; }
     if (priceRaw === "" || isNaN(price)) { toast("Precio inválido", "err"); return; }
-    step = "armar producto";
-    var excelKey = $("[data-p-excelkey]").value || name;
-    var img = curImgs.length ? (curImgs.length === 1 ? curImgs[0] : curImgs.slice()) : null;
-    var existing = curEditId ? PRODUCTS.find(function (x) { return x.id === parseInt(curEditId, 10); }) : null;
-    var prod = {
-      id: existing ? existing.id : (PRODUCTS.length ? Math.max.apply(null, PRODUCTS.map(function (p) { return p.id; })) + 1 : 1),
-      excelKey: excelKey, name: name, cat: $("[data-p-cat]").value,
-      description: $("[data-p-desc]").value, price: price,
-      cost: parseFloat($("[data-p-cost]").value) || 0,
-      sizes: curTags.slice(), badge: $("[data-p-badge]").value || null,
-      img: img, hidden: existing ? existing.hidden === true : false
-    };
-    if (existing) { var i = PRODUCTS.indexOf(existing); PRODUCTS[i] = prod; } else PRODUCTS.push(prod);
-    step = "persist";
-    persist(prod);
-    step = "stringify (revisar tamaño)";
-    var payloadSize = JSON.stringify(adminEdits).length;
+
     var btn = $("[data-prod-save]"); if (btn) { btn.disabled = true; btn.textContent = "Guardando…"; }
-    step = "enviar al servidor (payload " + Math.round(payloadSize/1024) + "KB)";
-    pushAdminData().then(function (res) {
+
+    // Subir al Blob cualquier imagen que todavía sea base64 (fotos viejas o recién agregadas sin subir)
+    var uploads = curImgs.map(function (im) {
+      if (typeof im === "string" && im.indexOf("data:image/") === 0) {
+        return uploadImage(im); // devuelve URL
+      }
+      return Promise.resolve(im); // ya es URL
+    });
+
+    Promise.all(uploads).then(function (urls) {
+      curImgs = urls;
+      var excelKey = $("[data-p-excelkey]").value || name;
+      var img = curImgs.length ? (curImgs.length === 1 ? curImgs[0] : curImgs.slice()) : null;
+      var existing = curEditId ? PRODUCTS.find(function (x) { return x.id === parseInt(curEditId, 10); }) : null;
+      var prod = {
+        id: existing ? existing.id : (PRODUCTS.length ? Math.max.apply(null, PRODUCTS.map(function (p) { return p.id; })) + 1 : 1),
+        excelKey: excelKey, name: name, cat: $("[data-p-cat]").value,
+        description: $("[data-p-desc]").value, price: price,
+        cost: parseFloat($("[data-p-cost]").value) || 0,
+        sizes: curTags.slice(), badge: $("[data-p-badge]").value || null,
+        img: img, hidden: existing ? existing.hidden === true : false
+      };
+      if (existing) { var i = PRODUCTS.indexOf(existing); PRODUCTS[i] = prod; } else PRODUCTS.push(prod);
+      persist(prod);
+      return pushAdminData();
+    }).then(function (res) {
       if (btn) { btn.disabled = false; btn.textContent = "Guardar producto"; }
       if (res.status === 401) { toast("Sesión inválida, reingresá", "err"); return; }
       if (!res.j.ok) { toast("Error servidor: " + (res.j.error || res.status), "err"); return; }
       closeProdModal(); renderProds(); renderGrid(); renderDash();
       toast("✓ Producto guardado", "ok");
-    }).catch(function (e) { if (btn) { btn.disabled = false; btn.textContent = "Guardar producto"; } toast("Error al enviar (payload " + Math.round(payloadSize/1024) + "KB): " + e.message, "err"); });
-    } catch (err) {
-      toast("Error en paso [" + step + "]: " + (err.message || err), "err");
-      console.error("saveProd error en paso:", step, err);
-    }
+    }).catch(function (e) {
+      if (btn) { btn.disabled = false; btn.textContent = "Guardar producto"; }
+      toast("Error al guardar: " + (e.message || e), "err");
+    });
   }
   var pendingDelId = null;
   function askDelete(id) {
@@ -515,8 +519,28 @@
     var done = 0;
     files.forEach(function (file) {
       if (file.size > 10 * 1024 * 1024) { toast('"' + file.name + '" pesa más de 10MB', "err"); return; }
-      compress(file).then(function (d) { curImgs.push(d); renderGallery(); }).catch(function () { toast("Error con " + file.name, "err"); })
+      // Comprimir → subir al Blob → guardar la URL (no el base64)
+      compress(file)
+        .then(function (dataUrl) {
+          toast("Subiendo imagen…", "ok");
+          return uploadImage(dataUrl);
+        })
+        .then(function (url) { curImgs.push(url); renderGallery(); toast("✓ Imagen subida", "ok"); })
+        .catch(function (e) { toast("Error con " + file.name + ": " + (e.message || e), "err"); })
         .then(function () { done++; if (done === files.length) input.value = ""; });
+    });
+  }
+  // Sube una imagen (dataUrl base64) al Blob y devuelve su URL pública
+  function uploadImage(dataUrl) {
+    return fetch("/api/upload-image", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "X-Admin-Pass": encodeURIComponent(adminPass) },
+      body: JSON.stringify({ dataUrl: dataUrl })
+    }).then(function (r) {
+      return r.json().then(function (j) {
+        if (!r.ok || !j.ok) throw new Error(j.error || ("HTTP " + r.status));
+        return j.url;
+      });
     });
   }
   function compress(file, maxW, q) {
