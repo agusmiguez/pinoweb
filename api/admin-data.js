@@ -19,6 +19,25 @@ function blobToken() {
 }
 const RW = blobToken();
 
+// Lee y parsea el body manualmente (funciones Vercel puras no siempre lo hacen)
+async function readJsonBody(req) {
+  if (req.body) {
+    if (typeof req.body === 'object') return req.body;
+    if (typeof req.body === 'string') {
+      try { return JSON.parse(req.body); } catch (e) { return {}; }
+    }
+  }
+  // Leer el stream crudo
+  return await new Promise((resolve) => {
+    let data = '';
+    req.on('data', (chunk) => { data += chunk; });
+    req.on('end', () => {
+      try { resolve(JSON.parse(data)); } catch (e) { resolve({}); }
+    });
+    req.on('error', () => resolve({}));
+  });
+}
+
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
@@ -52,12 +71,22 @@ export default async function handler(req, res) {
     }
 
     if (req.method === 'POST') {
-      const pass = req.headers['x-admin-pass'];
+      const parsed = await readJsonBody(req);
+      // Compatibilidad: acepta pass en body (nuevo) o en header (viejo)
+      const pass = parsed.pass !== undefined
+        ? parsed.pass
+        : decodeURIComponent(req.headers['x-admin-pass'] || '');
       if (pass !== ADMIN_PASS) {
         res.status(401).json({ ok: false, error: 'Contraseña incorrecta' });
         return;
       }
-      const body = req.body;
+      // Solo verificar la contraseña (login), sin guardar nada
+      if (parsed.verifyOnly === true) {
+        res.status(200).json({ ok: true, verified: true });
+        return;
+      }
+      // El contenido a guardar: body.data (nuevo) o el body entero sin pass (viejo)
+      const body = parsed.data !== undefined ? parsed.data : parsed;
       if (typeof body !== 'object' || body === null) {
         res.status(400).json({ ok: false, error: 'Body inválido' });
         return;
