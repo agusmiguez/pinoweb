@@ -84,15 +84,18 @@
     });
   }
 
-  function loadCatalog() {
+  var lastSource = null; // "excel" | "cache"
+  function loadCatalog(force) {
     var grid = $("[data-grid]");
     if (grid) grid.innerHTML = '<div class="loading"><div class="sp"></div><div>Cargando catálogo…</div></div>';
-    // admin-data y catalogo en paralelo (antes era en serie → se sumaban)
-    var catP = fetch("/api/catalogo").then(function (r) { if (!r.ok) throw new Error("Error " + r.status); return r.json(); });
+    // Si force=true, agrego un query único para saltarme el cache del CDN
+    var url = "/api/catalogo" + (force ? ("?fresh=" + Date.now()) : "");
+    var catP = fetch(url, force ? { cache: "no-store" } : {}).then(function (r) { if (!r.ok) throw new Error("Error " + r.status); return r.json(); });
     return Promise.all([fetchAdminData(), catP])
       .then(function (arr) {
         var data = arr[1];
         if (!data.ok) throw new Error(data.error || "Error desconocido");
+        lastSource = data.source || null;
         STOCK = data.stock || [];
         PRODUCTS = (data.products || []).map(function (p, i) {
           var key = p.name;
@@ -125,6 +128,22 @@
         if (grid) grid.innerHTML = '<div class="empty"><div class="ei">⚠️</div>No se pudo cargar el catálogo.<br><small>' +
           esc(e.message) + '</small><br><button class="btn btn-primary sm" data-act="reload" style="margin-top:14px">Reintentar</button></div>';
       });
+  }
+
+  // Botón "Actualizar desde Excel" del panel admin
+  function refreshFromExcel() {
+    var btn = $("[data-refresh-excel]");
+    if (btn) { btn.disabled = true; btn.textContent = "Actualizando…"; }
+    loadCatalog(true).then(function () {
+      if (btn) { btn.disabled = false; btn.textContent = "🔄 Actualizar desde Excel"; }
+      if (lastSource === "excel") {
+        toast("✓ Datos actualizados desde el Excel", "ok");
+      } else if (lastSource === "cache") {
+        toast("⚠️ Mostrando copia guardada. El token de Microsoft venció — renovalo.", "err");
+      } else {
+        toast("Datos recargados", "ok");
+      }
+    });
   }
 
   /* ── Tabs ───────────────────────────────────────────────────────────── */
@@ -633,6 +652,7 @@
       case "admin-login": doLogin(); break;
       case "admin-close": closePanel(); break;
       case "admin-logout": logout(); break;
+      case "refresh-excel": refreshFromExcel(); break;
       case "adm-tab": switchAdmTab(el.getAttribute("data-adm-tab")); break;
       case "new-prod": openProdModal(null); break;
       case "edit-prod": openProdModal(id); break;
@@ -657,6 +677,7 @@
       ["[data-admin-open]", "admin-open"], ["[data-admin-cancel]", "admin-cancel"],
       ["[data-admin-overlay]", "admin-cancel"], ["[data-admin-login-btn]", "admin-login"], ["[data-admin-close]", "admin-close"],
       ["[data-admin-logout]", "admin-logout"], ["[data-new-prod]", "new-prod"], ["[data-prod-close]", "prod-close"],
+      ["[data-refresh-excel]", "refresh-excel"],
       ["[data-prod-cancel]", "prod-cancel"], ["[data-prod-overlay]", "prod-cancel"], ["[data-prod-save]", "prod-save"],
       ["[data-tag-add]", "tag-add"], ["[data-confirm-cancel]", "confirm-cancel"], ["[data-confirm-overlay]", "confirm-cancel"], ["[data-confirm-ok]", "confirm-ok"]
     ];
