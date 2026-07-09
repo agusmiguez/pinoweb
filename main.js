@@ -181,6 +181,23 @@
     revealCards();
   }
 
+  function setCarousel(id, idx) {
+    var car = document.querySelector('.carousel[data-id="' + id + '"]');
+    if (!car) return;
+    var len = parseInt(car.getAttribute("data-len"), 10);
+    if (idx < 0) idx = len - 1;
+    if (idx >= len) idx = 0;
+    car.setAttribute("data-idx", idx);
+    car.querySelectorAll(".cslide").forEach(function (s, i) { s.classList.toggle("is-active", i === idx); });
+    car.querySelectorAll(".cdot").forEach(function (d, i) { d.classList.toggle("is-active", i === idx); });
+  }
+  function moveCarousel(id, dir) {
+    var car = document.querySelector('.carousel[data-id="' + id + '"]');
+    if (!car) return;
+    var idx = parseInt(car.getAttribute("data-idx"), 10) || 0;
+    setCarousel(id, idx + dir);
+  }
+
   function cardHTML(p) {
       var catLabel = (CATS.filter(function (c) { return c.id === p.cat; })[0] || {}).label || "";
       var total = getTotalDisp(p.excelKey);
@@ -191,10 +208,29 @@
       else if (hs) { stockTxt = total + " disponibles"; }
       var soldOut = hs && total === 0;
 
-      var img = firstImg(p.img);
-      var media = img
-        ? '<img src="' + esc(img) + '" alt="' + esc(p.name) + '" loading="lazy" />'
-        : '<div class="card-logo"><img src="assets/img/logo.svg" alt="" /></div>';
+      // Normalizar imágenes a un array (puede venir string, array o null)
+      var imgs = Array.isArray(p.img) ? p.img.slice() : (p.img ? [p.img] : []);
+      imgs = imgs.filter(function (u) { return u; });
+      var media;
+      if (imgs.length > 1) {
+        // Carrusel: slides + puntos + flechas
+        var slides = imgs.map(function (u, i) {
+          return '<img class="cslide' + (i === 0 ? " is-active" : "") + '" src="' + esc(u) + '" alt="' + esc(p.name) + '" loading="lazy" data-ci="' + i + '" />';
+        }).join("");
+        var dots = imgs.map(function (u, i) {
+          return '<button class="cdot' + (i === 0 ? " is-active" : "") + '" data-act="carousel-dot" data-id="' + p.id + '" data-i="' + i + '" aria-label="Imagen ' + (i + 1) + '"></button>';
+        }).join("");
+        media = '<div class="carousel" data-carousel data-id="' + p.id + '" data-idx="0" data-len="' + imgs.length + '">' +
+                  slides +
+                  '<button class="carrow prev" data-act="carousel-prev" data-id="' + p.id + '" aria-label="Anterior">‹</button>' +
+                  '<button class="carrow next" data-act="carousel-next" data-id="' + p.id + '" aria-label="Siguiente">›</button>' +
+                  '<div class="cdots">' + dots + '</div>' +
+                "</div>";
+      } else if (imgs.length === 1) {
+        media = '<img src="' + esc(imgs[0]) + '" alt="' + esc(p.name) + '" loading="lazy" />';
+      } else {
+        media = '<div class="card-logo"><img src="assets/img/logo.svg" alt="" /></div>';
+      }
       var badge = p.badge ? '<span class="badge ' + (BADGE_CLS[p.badge] || "b-green") + '">' + esc(p.badge) + "</span>" : "";
 
       var sizes = "";
@@ -653,6 +689,9 @@
       case "admin-close": closePanel(); break;
       case "admin-logout": logout(); break;
       case "refresh-excel": refreshFromExcel(); break;
+      case "carousel-prev": moveCarousel(id, -1); break;
+      case "carousel-next": moveCarousel(id, 1); break;
+      case "carousel-dot": setCarousel(id, parseInt(el.getAttribute("data-i"), 10)); break;
       case "adm-tab": switchAdmTab(el.getAttribute("data-adm-tab")); break;
       case "new-prod": openProdModal(null); break;
       case "edit-prod": openProdModal(id); break;
