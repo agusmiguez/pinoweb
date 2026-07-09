@@ -430,11 +430,15 @@
     if (!cur || cur === "prendas") $("[data-p-cat]").value = guessCat(key);
   }
   function saveProd() {
+    var step = "inicio";
+    try {
+    step = "leer campos";
     var name = $("[data-p-name]").value.trim();
     var priceRaw = $("[data-p-price]").value.trim();
     var price = parseFloat(priceRaw);
     if (!name) { toast("El nombre es obligatorio", "err"); return; }
     if (priceRaw === "" || isNaN(price)) { toast("Precio inválido", "err"); return; }
+    step = "armar producto";
     var excelKey = $("[data-p-excelkey]").value || name;
     var img = curImgs.length ? (curImgs.length === 1 ? curImgs[0] : curImgs.slice()) : null;
     var existing = curEditId ? PRODUCTS.find(function (x) { return x.id === parseInt(curEditId, 10); }) : null;
@@ -447,15 +451,23 @@
       img: img, hidden: existing ? existing.hidden === true : false
     };
     if (existing) { var i = PRODUCTS.indexOf(existing); PRODUCTS[i] = prod; } else PRODUCTS.push(prod);
+    step = "persist";
     persist(prod);
+    step = "stringify (revisar tamaño)";
+    var payloadSize = JSON.stringify(adminEdits).length;
     var btn = $("[data-prod-save]"); if (btn) { btn.disabled = true; btn.textContent = "Guardando…"; }
+    step = "enviar al servidor (payload " + Math.round(payloadSize/1024) + "KB)";
     pushAdminData().then(function (res) {
       if (btn) { btn.disabled = false; btn.textContent = "Guardar producto"; }
       if (res.status === 401) { toast("Sesión inválida, reingresá", "err"); return; }
-      if (!res.j.ok) { toast("Error: " + (res.j.error || ""), "err"); return; }
+      if (!res.j.ok) { toast("Error servidor: " + (res.j.error || res.status), "err"); return; }
       closeProdModal(); renderProds(); renderGrid(); renderDash();
       toast("✓ Producto guardado", "ok");
-    }).catch(function (e) { if (btn) { btn.disabled = false; btn.textContent = "Guardar producto"; } toast("Error: " + e.message, "err"); });
+    }).catch(function (e) { if (btn) { btn.disabled = false; btn.textContent = "Guardar producto"; } toast("Error al enviar (payload " + Math.round(payloadSize/1024) + "KB): " + e.message, "err"); });
+    } catch (err) {
+      toast("Error en paso [" + step + "]: " + (err.message || err), "err");
+      console.error("saveProd error en paso:", step, err);
+    }
   }
   var pendingDelId = null;
   function askDelete(id) {
