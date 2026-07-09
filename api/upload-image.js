@@ -16,8 +16,6 @@ function blobToken() {
 }
 const RW = blobToken();
 
-const RW = blobToken();
-
 // Lee y parsea el body manualmente (funciones Vercel puras no siempre lo hacen)
 async function readJsonBody(req) {
   if (req.body) {
