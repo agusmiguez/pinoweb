@@ -52,12 +52,17 @@ export default async function handler(req, res) {
     }
 
     if (req.method === 'POST') {
-      const pass = decodeURIComponent(req.headers['x-admin-pass'] || '');
+      const parsed = req.body || {};
+      // Compatibilidad: acepta pass en body (nuevo) o en header (viejo)
+      const pass = parsed.pass !== undefined
+        ? parsed.pass
+        : decodeURIComponent(req.headers['x-admin-pass'] || '');
       if (pass !== ADMIN_PASS) {
         res.status(401).json({ ok: false, error: 'Contraseña incorrecta' });
         return;
       }
-      const body = req.body;
+      // El contenido a guardar: body.data (nuevo) o el body entero sin pass (viejo)
+      const body = parsed.data !== undefined ? parsed.data : parsed;
       if (typeof body !== 'object' || body === null) {
         res.status(400).json({ ok: false, error: 'Body inválido' });
         return;

@@ -28,13 +28,11 @@ export default async function handler(req, res) {
   if (req.method !== 'POST') { res.status(405).json({ ok: false, error: 'Método no permitido' }); return; }
 
   try {
-    const pass = decodeURIComponent(req.headers['x-admin-pass'] || '');
+    const { dataUrl, pass } = req.body || {};
     if (pass !== ADMIN_PASS) {
       res.status(401).json({ ok: false, error: 'Contraseña incorrecta' });
       return;
     }
-
-    const { dataUrl } = req.body || {};
     if (!dataUrl || typeof dataUrl !== 'string' || !dataUrl.startsWith('data:image/')) {
       res.status(400).json({ ok: false, error: 'dataUrl inválido' });
       return;

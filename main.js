@@ -57,8 +57,8 @@
   function pushAdminData() {
     return fetch("/api/admin-data", {
       method: "POST",
-      headers: { "Content-Type": "application/json", "X-Admin-Pass": encodeURIComponent(adminPass) },
-      body: JSON.stringify(adminEdits)
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ pass: adminPass, data: adminEdits })
     }).then(function (r) { return r.json().then(function (j) { return { status: r.status, j: j }; }); });
   }
 
@@ -534,10 +534,12 @@
   function uploadImage(dataUrl) {
     return fetch("/api/upload-image", {
       method: "POST",
-      headers: { "Content-Type": "application/json", "X-Admin-Pass": encodeURIComponent(adminPass) },
-      body: JSON.stringify({ dataUrl: dataUrl })
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ dataUrl: dataUrl, pass: adminPass })
     }).then(function (r) {
-      return r.json().then(function (j) {
+      return r.text().then(function (txt) {
+        var j;
+        try { j = JSON.parse(txt); } catch (e) { throw new Error("Respuesta no válida (" + r.status + ")"); }
         if (!r.ok || !j.ok) throw new Error(j.error || ("HTTP " + r.status));
         return j.url;
       });
